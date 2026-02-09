@@ -1,0 +1,44 @@
+# requirements.txt
+# Dépendances pour l'application de gestion d'inventaire avec scanner EAN
+
+# Interface utilisateur
+kivy==2.1.0
+kivymd==0.104.2  # Facultatif - pour un design Material Design
+
+# Traitement d'images et caméra
+opencv-python-headless==4.5.5.64
+numpy==1.21.6
+pillow==9.0.1
+
+# Scanner de codes-barres
+pyzbar==0.1.9
+
+# Pour la compilation Android
+android==0.3
+
+# JSON et données
+# (inclus dans Python standard)
+
+# Notes pour Buildozer:
+# ---------------------
+# Pour Buildozer, certaines dépendances doivent être spécifiées différemment:
+# 
+# Dans buildozer.spec, utilisez:
+# requirements = python3,kivy==2.1.0,opencv-python-headless,numpy,pyzbar,android,pillow
+# 
+# Les versions exactes seront gérées par Buildozer
+
+# Dépendances système requises pour pyzbar:
+# ------------------------------------------
+# Sur Ubuntu/Debian:
+# sudo apt-get install libzbar0
+# 
+# Sur Windows: pyzbar inclut les DLL nécessaires
+# 
+# Pour Android: Buildozer inclura automatiquement les bibliothèques nécessaires
+
+# Dépendances optionnelles pour développement:
+# --------------------------------------------
+# buildozer==1.4.0  # Pour compiler l'APK
+# cython==0.29.28   # Requis par Buildozer
+# watchdog==2.1.9   # Pour le rechargement à chaud en développement
