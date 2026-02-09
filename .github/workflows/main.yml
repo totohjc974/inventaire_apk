@@ -1,0 +1,92 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:  # Permet de déclencher manuellement
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v3
+    
+    - name: 🐍 Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+    
+    - name: 📦 Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          python3-pip \
+          build-essential \
+          git \
+          zip \
+          unzip \
+          openjdk-11-jdk \
+          autoconf \
+          libtool \
+          pkg-config \
+          zlib1g-dev \
+          libncurses5-dev \
+          libncursesw5-dev \
+          cmake \
+          libffi-dev \
+          libssl-dev
+    
+    - name: 🔧 Install Python dependencies
+      run: |
+        pip install buildozer cython pillow
+    
+    - name: 🏗️ Initialize Buildozer
+      run: |
+        buildozer init
+        # Remplacer le fichier buildozer.spec par le nôtre
+        cp buildozer.spec .buildozer/ || true
+    
+    - name: 🚀 Build APK
+      run: |
+        echo "=== Début de la compilation ==="
+        buildozer android clean
+        buildozer android debug 2>&1 | tee build.log
+        
+        # Vérifier si l'APK a été créé
+        if ls bin/*.apk 1> /dev/null 2>&1; then
+          echo "✅ APK généré avec succès!"
+          ls -la bin/*.apk
+        else
+          echo "❌ Échec de la génération de l'APK"
+          tail -100 build.log
+          exit 1
+        fi
+    
+    - name: 📋 Build logs
+      if: always()
+      run: |
+        echo "=== Dernières lignes du log ==="
+        tail -50 build.log || true
+    
+    - name: 📤 Upload APK artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: app-apk
+        path: bin/*.apk
+        retention-days: 7
+    
+    - name: 🏷️ Create GitHub Release (optionnel)
+      if: github.event_name == 'workflow_dispatch'
+      uses: softprops/action-gh-release@v1
+      with:
+        files: bin/*.apk
+        tag_name: v1.0.${{ github.run_number }}
+        name: Release v1.0.${{ github.run_number }}
+        body: |
+          APK généré automatiquement via GitHub Actions
+          - Date: ${{ github.event.head_commit.timestamp }}
+          - Commit: ${{ github.sha }}
